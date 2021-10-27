@@ -45,8 +45,8 @@
 			//有幾個項目就呼叫幾個 addChild
 			//addChild 要比 renderModal 先呼叫
 			so.addChild("視角可以移動及放大", 2, true);
-			so.addChild("在畫面上畫出左眼的邊框", 2, false);
-			so.addChild("複製左眼邊框變化到右眼", 2, false);
+			so.addChild("在畫面上畫出左眼的邊框", 2, true);
+			so.addChild("複製左眼邊框變化到右眼", 2, true);
 			so.addChild("可選擇當前讀取角色或按鍵選擇上 / 下一隻角色", 1, true);
 			so.addChild("可儲存座標點檔案", 1, false);
 			so.addChild("回答問題", 2, true);
@@ -90,6 +90,13 @@
 
 		let camera, scene, renderer, effect;
 		let mesh, helper;
+		let b1=0,b2=0,b3=0,b4=0;
+		let be1=0,be2=0,be3=0,be4=0,lbe=0;
+		var location = new Array();
+		location[0] = new Array();
+		location[1] = new Array();
+		location[2] = new Array();
+		location[3] = new Array();
 
 		const vpds = [];
 
@@ -103,7 +110,44 @@
 		});
 
 		function init() {
+			var loaction_data = {
+				"modellist":[
+					{
+					"location":"models/mmd/るいのれ式物述有栖_配布用フォルダ/物述有栖.pmx",
+					"line_locationx_1":1000,
+					"line_locationy_1":0,
+					"line_locationx_2":0,
+					"line_locationy_2":0,
+					"line_locationx_3":0,
+					"line_locationy_3":0,
+					"line_locationx_4":0,
+					"line_locationy_4":0
+					},
+					{
+					"location":"models/mmd/kizunaai/kizunaai.pmx",
+					"line_locationx_1":0,
+					"line_locationy_1":0,
+					"line_locationx_2":0,
+					"line_locationy_2":0,
+					"line_locationx_3":0,
+					"line_locationy_3":0,
+					"line_locationx_4":0,
+					"line_locationy_4":0
+					},
+					{
+					"location":"models/mmd/『天宮こころ(Kokoro Amamiya)』/『天宮こころ(Kokoro Amamiya)』.pmx",
+					"line_locationx_1":0,
+					"line_locationy_1":0,
+					"line_locationx_2":0,
+					"line_locationy_2":0,
+					"line_locationx_3":0,
+					"line_locationy_3":0,
+					"line_locationx_4":0,
+					"line_locationy_4":0
+					}
+				]
 
+			}
 			const container = document.createElement('div');
 			document.body.appendChild(container);
 			let scale = 30;
@@ -132,19 +176,6 @@
 
 			effect = new OutlineEffect(renderer);
 
-			// line
-
-			/*const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
-
-			const points = [];
-			points.push( new THREE.Vector2( - 10, 0 ) );
-			points.push( new THREE.Vector2( 0, 10 ) );
-			const geometry = new THREE.BufferGeometry().setFromPoints( points );
-			const line = new THREE.Line( geometry, material );
-
-			scene.add( line );
-			renderer.render( scene, camera );*/
-
 			// click
 
 			var raycaster = new THREE.Raycaster();
@@ -152,30 +183,82 @@
 
 			function onMouseClick( event ) {
 
-				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-				
-				console.log(mouse.x, mouse.y);
+				var mouseWorld = new THREE.Vector3();
+				const { left, top, width, height } = event.target.getBoundingClientRect();
+				mouseWorld.set(
+				((event.clientX - left + 1) / width) * 2 - 1,
+				-((event.clientY - top + 1) / height) * 2 + 1,
+				(camera.near + camera.far) / (camera.near - camera.far),
+				);
+				mouseWorld.unproject(camera);
+				//console.log(mouseWorld.x, mouseWorld.y);
 
-				const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
 				const points = [];
-				points.push( new THREE.Vector2( 0, -2 ) );
-				points.push( new THREE.Vector2( 0, 2 ) );
-				const geometry = new THREE.BufferGeometry().setFromPoints( points );
-				const line = new THREE.Line( geometry, material );
-				line.position.x = mouse.x+5;
-				line.position.y = mouse.y+5;
-				line.position.z = 10;
-				scene.add( line );
-				console.log('LINE'+line.position.x + line.position.y);
-
-				/*const geometry = new THREE.CircleGeometry( 1, 32 );
-				const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
-				const circle = new THREE.Mesh( geometry, material );
-				circle.position.x = mouse.x*17;
-				circle.position.y = mouse.y*17;
-				circle.position.z = 10;
-				scene.add( circle );*/
+				if(b1 == 1){
+					const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+					points.push( new THREE.Vector3( mouseWorld.x-0.7, mouseWorld.y, 20 ) );
+					points.push( new THREE.Vector3( mouseWorld.x+0.7, mouseWorld.y, 20 ) );
+					const geometry = new THREE.BufferGeometry().setFromPoints( points );
+					const line = new THREE.Line( geometry, material );
+					line.name = "line1";
+					if(be1 == 1){          
+ 						scene.remove(scene.getObjectByName("line1"));
+					}
+					scene.add( line );
+					b1=0;
+					be1=1;
+					location[0][0] = mouseWorld.x;
+					location[0][1] = mouseWorld.y;
+				}
+				if(b2 == 1){
+					const material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+					points.push( new THREE.Vector3( mouseWorld.x, mouseWorld.y-0.7, 20 ) );
+					points.push( new THREE.Vector3( mouseWorld.x, mouseWorld.y+0.7, 20 ) );
+					const geometry = new THREE.BufferGeometry().setFromPoints( points );
+					const line = new THREE.Line( geometry, material );
+					line.name = "line2";
+					if(be2 == 1){          
+ 						scene.remove(scene.getObjectByName("line2"));
+					}
+					scene.add( line );
+					b2=0;
+					be2=1;
+					location[1][0] = mouseWorld.x;
+					location[1][1] = mouseWorld.y;
+				}
+				if(b3 == 1){
+					const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+					points.push( new THREE.Vector3( mouseWorld.x-0.7, mouseWorld.y, 20 ) );
+					points.push( new THREE.Vector3( mouseWorld.x+0.7, mouseWorld.y, 20 ) );
+					const geometry = new THREE.BufferGeometry().setFromPoints( points );
+					const line = new THREE.Line( geometry, material );
+					line.name = "line3";
+					if(be3 == 1){          
+ 						scene.remove(scene.getObjectByName("line3"));
+					}
+					scene.add( line );
+					b3=0;
+					be3=1;
+					location[2][0] = mouseWorld.x;
+					location[2][1] = mouseWorld.y;
+				}
+				if(b4 == 1){
+					const material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+					points.push( new THREE.Vector3( mouseWorld.x, mouseWorld.y-0.7, 20 ) );
+					points.push( new THREE.Vector3( mouseWorld.x, mouseWorld.y+0.7, 20 ) );
+					const geometry = new THREE.BufferGeometry().setFromPoints( points );
+					const line = new THREE.Line( geometry, material );
+					line.name = "line4";
+					if(be4 == 1){          
+ 						scene.remove(scene.getObjectByName("line4"));
+					}
+					scene.add( line );
+					b4=0;
+					be4=1;
+					location[3][0] = mouseWorld.x;
+					location[3][1] = mouseWorld.y;
+				}
+				
 
 			}
 
@@ -258,6 +341,116 @@
 							modelcount++;
 						}
 					}
+					if(e.key == '1'){
+						b1=1;b2=0;b3=0;b4=0;
+					}
+					if(e.key == '2'){
+						b1=0;b2=1;b3=0;b4=0;
+					}
+					if(e.key == '3'){
+						b1=0;b2=0;b3=1;b4=0;
+					}
+					if(e.key == '4'){
+						b1=0;b2=0;b3=0;b4=1;
+					}
+					if(e.key == 'q'){
+						for(let i=0;i<4;i++){
+							location[i][0] = location[i][0] * -1;
+							console.log(location[i][0]);
+							const points = [];
+							if(i==0){
+								const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+								points.push( new THREE.Vector3( location[i][0]-0.7, location[i][1], 20 ) );
+								points.push( new THREE.Vector3( location[i][0]+0.7, location[i][1], 20 ) );
+								const geometry = new THREE.BufferGeometry().setFromPoints( points );
+								const line = new THREE.Line( geometry, material );
+								line.name = "lline1";
+								if(lbe == 1){          
+									scene.remove(scene.getObjectByName("lline1"));
+								}
+								scene.add( line );
+							}
+							if(i==1){
+								const material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+								points.push( new THREE.Vector3( location[i][0], location[i][1]-0.7, 20 ) );
+								points.push( new THREE.Vector3( location[i][0], location[i][1]+0.7, 20 ) );
+								const geometry = new THREE.BufferGeometry().setFromPoints( points );
+								const line = new THREE.Line( geometry, material );
+								line.name = "lline2";
+								if(lbe == 1){          
+									scene.remove(scene.getObjectByName("lline2"));
+								}
+								scene.add( line );
+							}
+							if(i==2){
+								const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+								points.push( new THREE.Vector3( location[i][0]-0.7, location[i][1], 20 ) );
+								points.push( new THREE.Vector3( location[i][0]+0.7, location[i][1], 20 ) );
+								const geometry = new THREE.BufferGeometry().setFromPoints( points );
+								const line = new THREE.Line( geometry, material );
+								line.name = "lline3";
+								if(lbe == 1){          
+									scene.remove(scene.getObjectByName("lline3"));
+								}
+								scene.add( line );
+							}
+							if(i==3){
+								const material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+								points.push( new THREE.Vector3( location[i][0], location[i][1]-0.7, 20 ) );
+								points.push( new THREE.Vector3( location[i][0], location[i][1]+0.7, 20 ) );
+								const geometry = new THREE.BufferGeometry().setFromPoints( points );
+								const line = new THREE.Line( geometry, material );
+								line.name = "lline4";
+								if(lbe == 1){          
+									scene.remove(scene.getObjectByName("lline4"));
+								}
+								scene.add( line );
+							}
+							
+						}
+						lbe=1;
+					}
+					if(e.key == 's'){
+						if(modelcount == 0){
+							loaction_data["modellist"][modelcount]["line_locationx_1"] = location[0][0];
+							loaction_data["modellist"][modelcount]["line_locationy_1"] = location[0][1];
+							loaction_data["modellist"][modelcount]["line_locationx_2"] = location[1][0];
+							loaction_data["modellist"][modelcount]["line_locationy_2"] = location[1][1];
+							loaction_data["modellist"][modelcount]["line_locationx_3"] = location[2][0];
+							loaction_data["modellist"][modelcount]["line_locationy_3"] = location[2][1];
+							loaction_data["modellist"][modelcount]["line_locationx_4"] = location[3][0];
+							loaction_data["modellist"][modelcount]["line_locationy_4"] = location[3][1];
+						}
+						if(modelcount == 1){
+							loaction_data["modellist"][modelcount]["line_locationx_1"] = location[0][0];
+							loaction_data["modellist"][modelcount]["line_locationy_1"] = location[0][1];
+							loaction_data["modellist"][modelcount]["line_locationx_2"] = location[1][0];
+							loaction_data["modellist"][modelcount]["line_locationy_2"] = location[1][1];
+							loaction_data["modellist"][modelcount]["line_locationx_3"] = location[2][0];
+							loaction_data["modellist"][modelcount]["line_locationy_3"] = location[2][1];
+							loaction_data["modellist"][modelcount]["line_locationx_4"] = location[3][0];
+							loaction_data["modellist"][modelcount]["line_locationy_4"] = location[3][1];
+						}
+						if(modelcount == 2){
+							loaction_data["modellist"][modelcount]["line_locationx_1"] = location[0][0];
+							loaction_data["modellist"][modelcount]["line_locationy_1"] = location[0][1];
+							loaction_data["modellist"][modelcount]["line_locationx_2"] = location[1][0];
+							loaction_data["modellist"][modelcount]["line_locationy_2"] = location[1][1];
+							loaction_data["modellist"][modelcount]["line_locationx_3"] = location[2][0];
+							loaction_data["modellist"][modelcount]["line_locationy_3"] = location[2][1];
+							loaction_data["modellist"][modelcount]["line_locationx_4"] = location[3][0];
+							loaction_data["modellist"][modelcount]["line_locationy_4"] = location[3][1];
+						}
+						console.log(loaction_data)
+						function saveJSON(text, filename){
+							var a = document.createElement('a');
+							a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+							a.setAttribute('download', filename);
+							a.click();
+						}
+						saveJSON(JSON.stringify(loaction_data), "model_location.json");
+					}
+					
 					scene.remove(mesh);
 					loader.load(modelFile[modelcount], function (object) {
 
